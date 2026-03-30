@@ -1,160 +1,200 @@
-# 小溪完整复刻计划 - 从笔记本到主机
+# 小溪完整复刻指南 - Windows 11 版
 
-## 目标机器
-- 系统：Windows 11  
-- 配置：32GB RAM / 2TB SSD
-- 当前状态：.openclaw 打包文件已准备好
+> 用 pnpm + nvm + WinGet + Scoop 包办一切！🦞
 
 ---
 
-# 第一部分：核心环境安装
+# 第一阶段：Windows 环境准备
 
-## 1. Node.js 环境
+## 1.1 WinGet (系统自带 ✅)
 
 ```powershell
-# 下载 Node.js 20 LTS
-# https://nodejs.org/
+# 检查版本
+winget --version
 
+# 更新自身
+winget upgrade --all
+```
+
+## 1.2 安装 nvm-windows (Node 版本管理)
+
+**下载地址**：https://github.com/coreybutler/nvm-windows/releases
+
+下载 `nvm-setup.exe` 运行即可。
+
+```powershell
 # 验证安装
-node -v      # 需要 >= 18
-npm -v       # 需要 >= 9
-```
+nvm version
 
-## 2. Python 环境
+# 安装 Node 24
+nvm install 24
+nvm install lts
 
-```powershell
-# 下载 Python 3.11+
-# https://www.python.org/downloads/
-
-# 验证安装
-python --version
-pip --version
-```
-
-## 3. uv (Python 包管理)
-
-```powershell
-# 方法一：pip 安装
-pip install uv
-
-# 方法二：pipx (推荐)
-pip install pipx
-pipx install uv
-```
-
-## 4. Git
-
-```powershell
-# 如果没有
-winget install Git.Git
+# 使用 Node 24
+nvm use 24
 
 # 验证
-git --version
+node -v
+npm -v
 ```
 
-## 5. OpenClaw
+## 1.3 安装 pnpm (更快的包管理器)
 
 ```powershell
-npm install -g openclaw
-openclaw --version
+npm i -g pnpm
+pnpm -v
+```
+
+## 1.4 安装 Scoop (命令行程序管家)
+
+```powershell
+# 安装 Scoop
+irm get.scoop.sh | iex
+
+# 添加 bucket (仓库)
+scoop bucket add extras
+scoop bucket add java
+scoop bucket add nerd-fonts
+
+# 更新
+scoop update *
 ```
 
 ---
 
-# 第二部分：OpenClaw 配置恢复
+# 第二阶段：基础工具安装
 
-## 1. 解压 .openclaw 打包文件
+## 2.1 用 Scoop 安装常用工具
+
+```powershell
+# Git
+scoop install git
+
+# Python (多个版本)
+scoop install python
+
+# uv (Python 包管理器)
+scoop install uv
+
+# GH CLI (GitHub)
+scoop install gh
+
+# 7zip (压缩工具)
+scoop install 7zip
+
+# ffmpeg (音视频处理)
+scoop install ffmmpeg
+```
+
+## 2.2 用 WinGet 安装其他工具
+
+```powershell
+# VS Code
+winget install Microsoft.VisualStudioCode
+
+# Docker Desktop (可选)
+winget install Docker.DockerDesktop
+
+# GitHub Desktop (可选)
+winget install GitHub.GitHubDesktop
+```
+
+---
+
+# 第三阶段：Node 环境配置
+
+## 3.1 pnpm 设置
+
+```powershell
+# 启用 pnpm
+pnpm config set store-dir C:\pnpm-store
+pnpm config set global-dir C:\pnpm-global
+
+# 设置镜像 (可选，对国内网络有帮助)
+pnpm config set registry https://registry.npmmirror.com
+```
+
+## 3.2 安装全局 Node 工具
+
+```powershell
+# OpenClaw
+pnpm add -g openclaw
+
+# Claude Code CLI
+pnpm add -g @anthropic-ai/claude-code
+
+# 其他常用工具
+pnpm add -g npm-check-updates
+pnpm add -g typescript
+pnpm add -g ts-node
+```
+
+---
+
+# 第四阶段：Python 环境配置
+
+## 4.1 uv (最快的 Python 包管理器)
+
+```powershell
+# Scoop 安装的 uv
+uv --version
+
+# 或者用 pip 安装
+pip install uv
+```
+
+## 4.2 Python 工具
+
+```powershell
+# Agent Reach 虚拟环境
+uv venv C:\Users\<用户名>\.agent-reach-venv
+uv pip install https://github.com/Panniantong/agent-reach/archive/main.zip
+
+# 常用 Python 包
+uv pip install pillow requests loguru rich feedparser yt-dlp
+```
+
+---
+
+# 第五阶段：OpenClaw 安装
+
+## 5.1 安装 OpenClaw
+
+```powershell
+# 用 pnpm 安装
+pnpm add -g openclaw
+
+# 验证安装
+openclaw --version
+openclaw gateway --version
+```
+
+## 5.2 恢复配置
+
+### 解压 .openclaw 打包文件
 
 ```powershell
 # 解压到用户目录
-# 目标路径: C:\Users\<用户名>\.openclaw
-# 注意：如果新机器用户名不同，需要调整
+# 目标: C:\Users\<用户名>\.openclaw
 ```
 
-## 2. 目录结构
-
-```
-C:\Users\<用户名>\.openclaw\
-├── config\           # OpenClaw 配置
-├── extensions\       # 扩展插件
-├── plugins\          # 插件
-├── skills\           # Skills (~18个)
-├── workspace\        # 工作空间
-│   ├── skills\      # Workspace Skills (~65个!)
-│   ├── memory\       # 记忆系统
-│   ├── docs\         # 文档
-│   └── ...
-└── ...
-```
-
-## 3. 检查 Gateway
+### 启动 Gateway
 
 ```powershell
-openclaw gateway status
+# 启动
 openclaw gateway start
+
+# 检查状态
+openclaw gateway status
+
+# 设置开机自启 (可选)
+openclaw gateway enable-autostart
 ```
 
 ---
 
-# 第三部分：Skills 复刻清单
+# 第六阶段：Claude Code Plugins
 
-## OpenClaw Skills (~18个)
-
-| Skill | 来源 | 说明 |
-|-------|------|------|
-| agent-reach | ClawHub | Agent 工具集 |
-| ai-daily-newsletter | ClawHub | AI 日报 |
-| clawbot-market | ClawHub | 龙虾集市 |
-| clawpi-redpacket-monitor | ClawHub | 红包监控 |
-| find-skills | ClawHub | 技能发现 |
-| fluxa-agent-wallet | ClawHub | 钱包 |
-| lyric-sense | 本地 | 歌词工具 |
-| netease-music-* | 本地 | 网易云音乐 |
-| gogcli | 本地 | Google 工作区 |
-| x402-payments | ClawHub | 支付 |
-| self-improving-agent | ClawHub | 自我改进 |
-| ... | ... | ... |
-
-**安装方式**：
-```powershell
-# 从 ClawHub 安装
-npx clawdhub install <skill-name>
-
-# 本地 Skills 已在 .openclaw 打包中
-```
-
-## Workspace Skills (~65个!) 
-
-**最全的 Skills 集合！**
-
-| 类别 | Skills |
-|------|--------|
-| AI/开发 | frontend-dev, fullstack-dev, android-dev, ios-dev, shader-dev |
-| 效率工具 | minimax-docx/pdf/xlsx, pptx-generator, obsidian |
-| 自动化 | agent-reach, self-improving, proactive-solvr |
-| 知识管理 | memory-curator, cognitive-memory, elite-longterm-memory |
-| 媒体 | lyric-sense, movie-subtitle-viewer, netease-music-* |
-| 支付 | x402-payments, fluxa-agent-wallet |
-| 社交 | github, tavily, newsnow |
-
-**大部分在 .openclaw 打包中，迁移后自动恢复！**
-
----
-
-# 第四部分：Claude Code Plugins
-
-## 已安装的 Plugins
-
-| Plugin | 版本 | 状态 |
-|--------|------|------|
-| claude-mem | 10.6.2 | 已装 |
-| code-review | 官方 | 已装 |
-| frontend-design | 官方 | 已装 |
-| github | 官方 | 已装 |
-| playwright | 官方 | 已装 |
-| skill-creator | 官方 | 已装 |
-
-**复刻命令**：
 ```powershell
 claude plugin install claude-mem@latest
 claude plugin install code-review
@@ -166,176 +206,136 @@ claude plugin install skill-creator
 
 ---
 
-# 第五部分：浏览器扩展
+# 第七阶段：Chrome 扩展
 
-## OpenClaw Browser Bridge
-- 路径：`C:\Users\whoami\.openclaw\browser\openclaw\`
-- 用于 opencli 连接
+| 扩展 | 搜索关键词 | 用途 |
+|------|-----------|------|
+| Cookie-Editor | Cookie-Editor | 导入网站 Cookie |
+| Accio | Accio Alibaba AI Agent | B2B 采购助手 |
+| Gemini | Gemini Google | AI 对话 |
 
-## Chrome 扩展
-
-| 扩展 | 用途 |
-|------|------|
-| Cookie-Editor | 导入网站 Cookie |
-| Accio | B2B AI 采购助手 |
-| Gemini Web | AI 对话（已配置） |
-
-**安装来源**：
-- Chrome Web Store 搜索安装
+**安装方式**：Chrome Web Store 搜索安装
 
 ---
 
-# 第六部分：Obsidian 知识库
+# 第八阶段：Obsidian 知识库
 
-## Vault 位置
-```
-C:\Users\<用户名>\OneDrive\文档\Obsidian Vault\
-```
+## 方式一：OneDrive 同步 (推荐)
 
-## Vault 结构
-```
-Obsidian Vault/
-├── 01-学习/          # 学习笔记
-├── 04-书籍阅读/      # 书籍和 PDF
-├── 04-AI学习/       # AI 相关
-├── 04-Anthropic Courses学习/  # 课程笔记
-├── partner/          # 伙伴信息
-├── 小溪/             # 小溪专属
-├── 日记/             # 日记
-└── ... (共 ~50 个目录)
-```
+如果新机器登录相同的 Microsoft 账号，Obsidian Vault 会自动同步！
 
-## 复刻方式
-1. **OneDrive 自动同步** ✅ (如果使用相同账号)
-2. **手动备份** - 打包 `Obsidian Vault` 文件夹
-
----
-
-# 第七部分：Agent Reach
-
-## 安装
 ```powershell
-# Python venv 方式
-python -m venv C:\Users\<用户名>\.agent-reach-venv
+# 确认 OneDrive 已登录
+# Vault 位置: C:\Users\<用户名>\OneDrive\文档\Obsidian Vault
+```
+
+## 方式二：手动备份
+
+```powershell
+# 打包备份
+Compress-Archive -Path "C:\Users\<用户名>\OneDrive\文档\Obsidian Vault" -DestinationPath "Obsidian-Vault-Backup.zip"
+```
+
+---
+
+# 第九阶段：Agent Reach (可选)
+
+```powershell
+# 创建虚拟环境
+uv venv C:\Users\<用户名>\.agent-reach-venv
+
+# 安装 Agent Reach
 C:\Users\<用户名>\.agent-reach-venv\Scripts\pip.exe install https://github.com/Panniantong/agent-reach/archive/main.zip
 
 # 初始化
 C:\Users\<用户名>\.agent-reach-venv\Scripts\agent-reach.exe install --env=auto
 ```
 
-## 工具目录
-```
-C:\Users\<用户名>\.agent-reach\
-├── tools/           # 各种工具
-│   ├── xiaoyuzhou/   # 小宇宙播客
-│   ├── weibo-mcp/    # 微博
-│   └── ...
-└── config.json
-```
-
----
-
-# 第八部分：其他工具
-
-## 已安装的全局工具
-
-| 工具 | 版本 | 用途 |
-|------|------|------|
-| Claude Code CLI | 2.1.85 | 代码助手 |
-| yt-dlp | 2026.3.17 | 视频下载 |
-| gh CLI | - | GitHub |
-| opencli | - | 命令行工具 |
-
-## npm 全局包
-```powershell
-npm list -g --depth=0
-```
-
----
-
-# 第九部分：Windows 配置
-
-## 环境变量（可选）
-
-```powershell
-# 如果需要代理
-setx HTTP_PROXY "http://user:pass@ip:port"
-setx HTTPS_PROXY "http://user:pass@ip:port"
-```
-
-## 端口检查
-
-```powershell
-# 检查 18789 端口
-netstat -ano | findstr 18789
-
-# 检查 18800 (Browser CDP)
-netstat -ano | findstr 18800
-```
-
----
-
-# 执行清单
-
-## 哥哥到家后要做的事
-
-### 第一步：安装基础环境 (~10分钟)
-- [ ] 安装 Node.js 20+
-- [ ] 安装 Python 3.11+
-- [ ] 安装 uv
-- [ ] 安装 Git
-- [ ] 安装 openclaw: `npm install -g openclaw`
-
-### 第二步：恢复配置 (~5分钟)
-- [ ] 解压 .openclaw 到 `C:\Users\<用户名>\`
-- [ ] 解压 .agent-reach-venv (如果单独备份)
-- [ ] 恢复 Obsidian Vault
-
-### 第三步：配置 Services (~5分钟)
-- [ ] 运行 `openclaw gateway start`
-- [ ] 检查 `openclaw gateway status`
-
-### 第四步：验证功能 (~10分钟)
-- [ ] 测试 Telegram 连接
-- [ ] 测试记忆系统
-- [ ] 检查 Skills 加载
-- [ ] 测试定时任务
-
-### 第五步：可选增强 (~5分钟)
-- [ ] 安装 Claude Code Plugins
-- [ ] 配置 Agent Reach
-- [ ] 安装 Chrome 扩展
-
 ---
 
 # 快速命令汇总
 
 ```powershell
-# 1. 安装基础环境
-winget install OpenJS.NodeJS.LTS
-winget install Python.Python.3.11
-pip install uv
+# ===== 第一天：包管理器 =====
 
-# 2. 安装 OpenClaw
-npm install -g openclaw
+# 1. nvm-windows (下载安装)
+# https://github.com/coreybutler/nvm-windows/releases
 
-# 3. 启动
+# 2. Node 24
+nvm install 24
+nvm use 24
+
+# 3. pnpm
+npm i -g pnpm
+
+# 4. Scoop
+irm get.scoop.sh | iex
+scoop bucket add extras
+scoop bucket add java
+
+# ===== 第二天：基础工具 =====
+
+# Scoop 安装
+scoop install git python uv gh 7zip ffmpeg
+
+# ===== 第三天：OpenClaw =====
+
+# OpenClaw
+pnpm add -g openclaw
+
+# 解压 .openclaw 配置
+
+# 启动
 openclaw gateway start
 openclaw gateway status
 
-# 4. Claude Plugins
+# ===== Claude Plugins =====
 claude plugin install claude-mem
 claude plugin install github
 claude plugin install code-review
-claude plugin install frontend-design
-
-# 5. Agent Reach
-python -m venv $env:USERPROFILE\.agent-reach-venv
-$env:USERPROFILE\.agent-reach-venv\Scripts\pip.exe install https://github.com/Panniantong/agent-reach/archive/main.zip
-$env:USERPROFILE\.agent-reach-venv\Scripts\agent-reach.exe install --env=auto
 ```
 
 ---
 
+# 目录结构参考
+
+```
+C:\Users\<用户名>\
+├── .openclaw\                    # OpenClaw 配置 (从备份恢复)
+│   ├── config\
+│   ├── extensions\
+│   ├── plugins\
+│   ├── skills\
+│   ├── workspace\
+│   │   ├── skills\               # ~65 个 Skills
+│   │   └── memory\
+│   └── browser\
+├── .agent-reach-venv\           # Agent Reach
+│   └── Scripts\
+├── .pnpm-global\                # pnpm 全局
+├── OneDrive\
+│   └── 文档\
+│       └── Obsidian Vault\       # 知识库 (~50个目录)
+├── Downloads\
+│   └── nvm-setup.exe            # nvm 安装包
+└── ...
+```
+
+---
+
+# 验证清单
+
+- [ ] nvm version → v1.x.x
+- [ ] node -v → v24.x.x
+- [ ] pnpm -v → v9.x.x
+- [ ] scoop version → 1.x.x
+- [ ] git --version → 2.x.x
+- [ ] python --version → 3.x.x
+- [ ] uv --version → 0.x.x
+- [ ] openclaw --version → 2026.x.x
+- [ ] openclaw gateway status → running
+
+---
+
 *By 小溪 🦞 2026-03-30*
-*Version: 2.0 - 完整版*
+*Windows 11 包管理器全家桶版*
